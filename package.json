@@ -1,0 +1,106 @@
+{
+  "name": "remark-lint",
+  "displayName": "Remark Lint",
+  "description": "Lint markdown and mdx documents.",
+  "version": "0.0.1",
+  "publisher": "stefanprobst",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefanprobst/remark-lint"
+  },
+  "engines": {
+    "vscode": "^1.58.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onCommand:remark-lint.lint-document",
+    "onLanguage:markdown",
+    "onLanguage:mdx"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "remark-lint.lint-document",
+        "title": "Lint markdown or mdx document"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "remark-lint.lint-document",
+          "when": "editorLangId == markdown || editorLangId == mdx"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "package": "yarn run esbuild --minify",
+    "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "compile": "yarn run esbuild --sourcemap",
+    "watch": "yarn run esbuild --sourcemap --watch",
+    "format": "prettier . --list-different --ignore-path .gitignore",
+    "format:fix": "yarn run format --write",
+    "lint": "eslint src --cache --ext ts --ignore-path .gitignore",
+    "lint:fix": "yarn run lint --fix",
+    "pretest": "yarn run test-compile && yarn run lint",
+    "test": "node ./out/test/runTest.js",
+    "test-compile": "tsc -p ./",
+    "test-watch": "tsc -watch -p ./",
+    "typecheck": "tsc -p ./ --noEmit",
+    "validate": "yarn run format && yarn run lint && yarn run typecheck"
+  },
+  "dependencies": {
+    "remark": "^13.0.0",
+    "unified-engine": "^9.0.2",
+    "vfile": "^5.0.2",
+    "xdm": "^1.12.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
+    "@stefanprobst/commitlint-config": "^1.0.2",
+    "@stefanprobst/prettier-config": "^1.0.4",
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.58.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "esbuild": "^0.12.15",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "glob": "^7.1.7",
+    "mocha": "^8.4.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.3.2",
+    "vscode-test": "^1.5.2"
+  },
+  "commitlint": {
+    "extends": "@stefanprobst/commitlint-config"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "prettier"
+    ]
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ],
+    "*.@(json|md)": "prettier --write"
+  },
+  "prettier": "@stefanprobst/prettier-config",
+  "simple-git-hooks": {
+    "commit-msg": "yarn commitlint --edit",
+    "pre-commit": "yarn lint-staged",
+    "pre-push": "yarn run validate"
+  }
+}
