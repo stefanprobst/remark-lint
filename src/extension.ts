@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { VFile } from 'vfile'
-import remark = require('remark')
+import { remark } from 'remark'
 import { engine } from 'unified-engine'
 import { remarkMarkAndUnravel } from 'xdm/lib/plugin/remark-mark-and-unravel'
 import { remarkMdx } from 'xdm/lib/plugin/remark-mdx'
