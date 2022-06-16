@@ -1,9 +1,7 @@
 import * as vscode from 'vscode'
 import { VFile } from 'vfile'
-import { remark } from 'remark'
 import { engine } from 'unified-engine'
-import { remarkMarkAndUnravel } from 'xdm/lib/plugin/remark-mark-and-unravel'
-import { remarkMdx } from 'xdm/lib/plugin/remark-mdx'
+import { createProcessor } from '@mdx-js/mdx'
 
 const statusIcons = {
   ready: 'check-all',
@@ -39,35 +37,25 @@ export function activate(context: vscode.ExtensionContext): void {
     return lint(editor.document)
   })
 
-  const onDidSaveTextDocument = vscode.workspace.onDidSaveTextDocument(
-    (document) => {
-      return lint(document)
-    },
-  )
-  const onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument(
-    (document) => {
-      return lint(document)
-    },
-  )
-  const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(
-    (editor) => {
-      if (!editor) {
-        return
-      }
+  const onDidSaveTextDocument = vscode.workspace.onDidSaveTextDocument((document) => {
+    return lint(document)
+  })
+  const onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument((document) => {
+    return lint(document)
+  })
+  const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor((editor) => {
+    if (!editor) {
+      return
+    }
 
-      return lint(editor.document)
-    },
-  )
+    return lint(editor.document)
+  })
 
   outputChannel = vscode.window.createOutputChannel('Remark Lint')
 
-  diagnosticCollection =
-    vscode.languages.createDiagnosticCollection('remark-lint')
+  diagnosticCollection = vscode.languages.createDiagnosticCollection('remark-lint')
 
-  statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    -1,
-  )
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -1)
   statusBarItem.command = lintDocumentId
   setStatus('ready')
   statusBarItem.show()
@@ -104,10 +92,7 @@ function lint(activeDocument: vscode.TextDocument) {
 
   const path = activeDocument.isUntitled ? undefined : activeDocument.uri.fsPath
   const vfile = new VFile({ value: activeDocument.getText(), path })
-
-  const processor = isMarkdownDocument
-    ? remark()
-    : remark().use(remarkMdx).use(remarkMarkAndUnravel)
+  const processor = createProcessor()
 
   return new Promise<void>((resolve, reject) => {
     const name = 'remark'
@@ -145,12 +130,8 @@ function lint(activeDocument: vscode.TextDocument) {
 
               return new vscode.Diagnostic(
                 range,
-                [message.reason, `${message.source}(${message.ruleId})`].join(
-                  ' - ',
-                ),
-                message.fatal
-                  ? vscode.DiagnosticSeverity.Error
-                  : vscode.DiagnosticSeverity.Warning,
+                [message.reason, `${message.source}(${message.ruleId})`].join(' - '),
+                message.fatal ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning,
               )
             })
 
